@@ -13,8 +13,10 @@ import org.vedruna.twitterapi.persistance.entity.UserEntity;
 import org.vedruna.twitterapi.persistance.repository.PublicationRepository;
 import org.vedruna.twitterapi.persistance.repository.UserRepository;
 import org.vedruna.twitterapi.service.PublicationService;
+import org.vedruna.twitterapi.service.exception.PublicationConflictException;
+import org.vedruna.twitterapi.service.exception.PublicationNotFoundException;
+import org.vedruna.twitterapi.service.exception.UserNotFoundException;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +43,7 @@ public class PublicationServiceImpl implements PublicationService {
     public Page<PublicationEntity> getPublicationsByUser(Integer userId, Pageable pageable) {
         log.info("Obteniendo publicaciones de userId {}", userId);
         if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User not found with id " + userId);
+            throw new UserNotFoundException("User not found with id " + userId);
         }
         return publicationRepository.findAllByUserId(userId, pageable);
     }
@@ -51,9 +53,8 @@ public class PublicationServiceImpl implements PublicationService {
     public Page<PublicationEntity> getPublicationsOfFollowing(Integer userId, Pageable pageable) {
         log.info("Obteniendo publicaciones de los usuarios que sigue userId {}", userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
 
-        // convertimos Set<UserEntity> following a List<UserEntity>
         List<UserEntity> following = user.getFollowing() == null
                 ? List.of()
                 : user.getFollowing().stream().collect(Collectors.toList());
@@ -67,12 +68,12 @@ public class PublicationServiceImpl implements PublicationService {
         log.info("Creando publicación para userId {}", publication.getUser() != null ? publication.getUser().getId() : null);
 
         if (publication.getUser() == null || publication.getUser().getId() == null) {
-            throw new IllegalArgumentException("Publication must contain user id");
+            throw new PublicationConflictException("Publication must contain user id");
         }
 
         Integer userId = publication.getUser().getId();
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
 
         publication.setUser(user);
         publication.setCreateDate(LocalDateTime.now());
@@ -86,9 +87,8 @@ public class PublicationServiceImpl implements PublicationService {
     public PublicationEntity updatePublication(Integer publicationId, PublicationEntity publication) {
         log.info("Actualizando publicación id {}", publicationId);
         PublicationEntity existing = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new EntityNotFoundException("Publication not found with id " + publicationId));
+                .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
 
-        // Solo el texto y update_date (según requisitos): no tocar user ni createDate
         existing.setText(publication.getText());
         existing.setUpdateDate(LocalDateTime.now());
 
@@ -102,7 +102,7 @@ public class PublicationServiceImpl implements PublicationService {
     public void deletePublication(Integer publicationId) {
         log.info("Borrando publicación id {}", publicationId);
         if (!publicationRepository.existsById(publicationId)) {
-            throw new EntityNotFoundException("Publication not found with id " + publicationId);
+            throw new PublicationNotFoundException("Publication not found with id " + publicationId);
         }
         publicationRepository.deleteById(publicationId);
     }
