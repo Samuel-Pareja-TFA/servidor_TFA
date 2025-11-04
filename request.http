@@ -6,10 +6,10 @@ POST http://localhost:8080/api/v1/users/register
 Content-Type: application/json
 
 {
-  "username": "nuevoUsuario",
+  "username": "pepito123",
   "password": "MiPass123!",
-  "email": "nuevo@example.com",
-  "description": "Un usuario nuevo"
+  "email": "pepito123@example.com",
+  "description": "Un usuario nuevo para pruebas"
 }
 
 #################################################################

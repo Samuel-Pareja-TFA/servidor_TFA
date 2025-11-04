@@ -1,7 +1,6 @@
 package org.vedruna.twitterapi.service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,18 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vedruna.twitterapi.persistance.entity.UserEntity;
 import org.vedruna.twitterapi.persistance.repository.UserRepository;
+import org.vedruna.twitterapi.service.RoleService;
 import org.vedruna.twitterapi.service.UserService;
+import org.vedruna.twitterapi.service.exception.EmailConflictException;
+import org.vedruna.twitterapi.service.exception.RoleNotFoundException;
+import org.vedruna.twitterapi.service.exception.UserNotFoundException;
+import org.vedruna.twitterapi.service.exception.UsernameConflictException;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementación de UserService.
- *
- * @Slf4j proporciona el logger {@code log}.
- * @AllArgsConstructor genera constructor para inyección de dependencias.
- * @Service marca la clase como componente de Spring.
  */
 @Slf4j
 @AllArgsConstructor
@@ -28,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleService roleService;
 
     @Override
     @Transactional
@@ -35,10 +35,29 @@ public class UserServiceImpl implements UserService {
         log.info("Creando usuario: {}", user.getUsername());
 
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+            log.warn("Username conflict al crear usuario: {}", user.getUsername());
+            throw new UsernameConflictException();
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            log.warn("Email conflict al crear usuario: {}", user.getEmail());
+            throw new EmailConflictException();
+        }
+
+        // --- FIX: asignar createDate si no viene en el DTO/Entity ---
+        if (user.getCreateDate() == null) {
+            user.setCreateDate(LocalDate.now());
+        }
+
+        // --- Asignar rol por defecto si no se ha indicado ---
+        if (user.getRole() == null) {
+            roleService.findByName("Usuario")
+                .ifPresentOrElse(
+                    user::setRole,
+                    () -> {
+                        log.error("Role por defecto 'Usuario' no encontrado al crear usuario {}", user.getUsername());
+                        throw new RoleNotFoundException("Default role 'Usuario' not found");
+                    }
+                );
         }
 
         UserEntity saved = userRepository.save(user);
@@ -51,7 +70,7 @@ public class UserServiceImpl implements UserService {
     public UserEntity getUserById(Integer userId) {
         log.info("Buscando usuario por id {}", userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
     }
 
     @Override
@@ -59,7 +78,10 @@ public class UserServiceImpl implements UserService {
     public UserEntity getUserByUsername(String username) {
         log.info("Buscando usuario por username {}", username);
         UserEntity u = userRepository.findByUsername(username);
-        if (u == null) throw new EntityNotFoundException("User not found with username " + username);
+        if (u == null) {
+            log.warn("Usuario no encontrado por username: {}", username);
+            throw new UserNotFoundException("User not found with username " + username);
+        }
         return u;
     }
 
@@ -68,10 +90,11 @@ public class UserServiceImpl implements UserService {
     public UserEntity updateUsername(Integer userId, String newUsername) {
         log.info("Actualizando username para userId {} -> {}", userId, newUsername);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
 
         if (userRepository.existsByUsername(newUsername)) {
-            throw new IllegalArgumentException("Username already exists");
+            log.warn("Username conflict al actualizar userId {} a {}", userId, newUsername);
+            throw new UsernameConflictException();
         }
 
         user.setUsername(newUsername);
@@ -84,9 +107,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public Page<UserEntity> getFollowing(Integer userId, Pageable pageable) {
         log.info("Obteniendo following de userId {}", userId);
-        // valida existencia del usuario
         if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User not found with id " + userId);
+            log.warn("Usuario no encontrado al consultar following: {}", userId);
+            throw new UserNotFoundException("User not found with id " + userId);
         }
         return userRepository.findFollowingByUserId(userId, pageable);
     }
@@ -96,7 +119,8 @@ public class UserServiceImpl implements UserService {
     public Page<UserEntity> getFollowers(Integer userId, Pageable pageable) {
         log.info("Obteniendo followers de userId {}", userId);
         if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User not found with id " + userId);
+            log.warn("Usuario no encontrado al consultar followers: {}", userId);
+            throw new UserNotFoundException("User not found with id " + userId);
         }
         return userRepository.findFollowersByUserId(userId, pageable);
     }
