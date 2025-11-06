@@ -6,25 +6,25 @@ POST http://localhost:8080/api/v1/users/register
 Content-Type: application/json
 
 {
-  "username": "pepito123",
+  "username": "pepito1234",
   "password": "MiPass123!",
-  "email": "pepito123@example.com",
-  "description": "Un usuario nuevo para pruebas"
+  "email": "pepito1234@example.com",
+  "description": "Un usuario nuevo para pruebas 2"
 }
 
 #################################################################
 # 2) Login de usuario (público)
-POST http://localhost:8080/api/v1/auth/login
+POST http://localhost:8080/api/v1/users/login
 Content-Type: application/json
 
 {
-  "username": "nuevoUsuario",
+  "username": "pepito1234",
   "password": "MiPass123!"
 }
 
 #################################################################
 # 3) Editar sólo el nombre de usuario (temporal privado, sin auth)
-PATCH http://localhost:8080/api/v1/users/1/username
+PATCH http://localhost:8080/api/v1/users/5/username
 Content-Type: application/json
 
 {
@@ -33,47 +33,47 @@ Content-Type: application/json
 
 #################################################################
 # 4) Buscar usuario por username (público)
-GET http://localhost:8080/api/v1/users/search?username=nuevoUsuario
+GET http://localhost:8080/api/v1/users/by-username/usuarioEditado
 Accept: application/json
 
 #################################################################
 # 5) Obtener todos los usuarios que sigue un usuario (temporal privado, sin auth)
-GET http://localhost:8080/api/v1/users/1/following
+GET http://localhost:8080/api/v1/users/3/following
 Accept: application/json
 
 #################################################################
 # 6) Obtener todos los usuarios que siguen a un usuario (temporal privado, sin auth)
-GET http://localhost:8080/api/v1/users/1/followers
+GET http://localhost:8080/api/v1/users/3/followers
 Accept: application/json
 
 #################################################################
 # 7) Obtener todas las publicaciones (temporal privado, sin auth)
-GET http://localhost:8080/api/v1/publications
+GET http://localhost:8080/api/v1/publications/
 Accept: application/json
 
 #################################################################
 # 8) Obtener todas las publicaciones de un usuario (público)
-GET http://localhost:8080/api/v1/users/2/publications
+GET http://localhost:8080/api/v1/publications/user/2
 Accept: application/json
 
 #################################################################
 # 9) Obtener todas las publicaciones de los usuarios que sigues (temporal privado, sin auth)
-GET http://localhost:8080/api/v1/publications/feed
+GET http://localhost:8080/api/v1/publications/timeline/3
 Accept: application/json
 
 #################################################################
 # 10) Insertar publicación (temporal privado, sin auth)
-POST http://localhost:8080/api/v1/publications
+POST http://localhost:8080/api/v1/publications/
 Content-Type: application/json
 
 {
-  "userId": 2,
-  "text": "Esta es mi nueva publicación desde request.http"
+  "userId": 4,
+  "text": "Esta es mi nueva publicación desde request.http 2"
 }
 
 #################################################################
 # 11) Editar publicación (temporal privado, sin auth)
-PUT http://localhost:8080/api/v1/publications/3
+PUT http://localhost:8080/api/v1/publications/5
 Content-Type: application/json
 
 {
@@ -82,4 +82,4 @@ Content-Type: application/json
 
 #################################################################
 # 12) Borrar publicación (temporal privado, sin auth)
-DELETE http://localhost:8080/api/v1/publications/3
+DELETE http://localhost:8080/api/v1/publications/5

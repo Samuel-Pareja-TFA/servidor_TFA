@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.vedruna.twitterapi.controller.dto.CreatePublicationDto;
 import org.vedruna.twitterapi.controller.dto.PublicationDto;
+import org.vedruna.twitterapi.controller.dto.UpdatePublicationDto;
 
 /**
  * Endpoints para publicaciones (timeline, CRUD publicaciones).
@@ -47,7 +48,7 @@ public interface PublicationController {
      */
     @PutMapping("/{publicationId}")
     ResponseEntity<PublicationDto> updatePublication(@PathVariable Integer publicationId,
-                                                     @RequestBody @Valid CreatePublicationDto dto);
+                                                 @RequestBody @Valid UpdatePublicationDto dto);
 
     /**
      * Borrar publicación (privado).

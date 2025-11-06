@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.vedruna.twitterapi.controller.dto.CreateUserDto;
 import org.vedruna.twitterapi.controller.dto.LoginDto;
 import org.vedruna.twitterapi.controller.dto.TokenDto;
+import org.vedruna.twitterapi.controller.dto.UpdateUsernameDto;
 import org.vedruna.twitterapi.controller.dto.UserDto;
 
 /**
@@ -39,7 +40,7 @@ public interface UserController {
      */
     @PatchMapping("/{userId}/username")
     ResponseEntity<UserDto> updateUsername(@PathVariable Integer userId,
-                                           @RequestBody @Valid CreateUserDto partialDto /* puedes crear un DTO específico para username */);
+                                       @RequestBody @Valid UpdateUsernameDto partialDto);
 
     /**
      * Buscar usuario por username (público).

@@ -12,7 +12,9 @@ import org.vedruna.twitterapi.controller.dto.CreateUserDto;
 import org.vedruna.twitterapi.controller.dto.LoginDto;
 import org.vedruna.twitterapi.controller.dto.TokenDto;
 import org.vedruna.twitterapi.controller.dto.UserDto;
+import org.vedruna.twitterapi.controller.dto.UpdateUsernameDto;
 import org.vedruna.twitterapi.persistance.entity.UserEntity;
+import org.vedruna.twitterapi.service.AuthService;
 import org.vedruna.twitterapi.service.UserService;
 
 import jakarta.validation.Valid;
@@ -22,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Implementación REST del UserController.
  *
- * NOTA: para el login deberás inyectar el componente/service que genere el JWT (no incluido aquí).
+ * Login temporal delegando a AuthService (sin Spring Security).
  */
 @AllArgsConstructor
 @CrossOrigin
@@ -32,7 +34,7 @@ public class UserControllerImpl implements UserController {
 
     private final UserService userService;
     private final UserConverter userConverter;
-    // Si tienes un AuthService para login, inyectalo aquí (ej: private final AuthService authService;)
+    private final AuthService authService; // <-- inyectado
 
     @Override
     public ResponseEntity<UserDto> registerUser(@Valid CreateUserDto dto) {
@@ -45,17 +47,15 @@ public class UserControllerImpl implements UserController {
     @Override
     public ResponseEntity<TokenDto> login(@Valid LoginDto dto) {
         log.info("Login attempt for username {}", dto.getUsername());
-        // Aqui deberías delegar a un AuthService que autentique y devuelva token.
-        // Por ahora devolvemos 501 si no tienes implementado el auth.
-        // TokenDto token = authService.login(dto);
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        TokenDto token = authService.login(dto);
+        return ResponseEntity.ok(token);
     }
 
     @Override
-    public ResponseEntity<UserDto> updateUsername(Integer userId, @Valid CreateUserDto partialDto) {
-        log.info("Update username for userId {} -> {}", userId, partialDto.getUsername());
-        UserEntity updated = userService.updateUsername(userId, partialDto.getUsername());
-        return ResponseEntity.ok(userConverter.toDto(updated));
+    public ResponseEntity<UserDto> updateUsername(Integer userId, @Valid UpdateUsernameDto partialDto) {
+    log.info("Update username for userId {} -> {}", userId, partialDto.getUsername());
+    UserEntity updated = userService.updateUsername(userId, partialDto.getUsername());
+    return ResponseEntity.ok(userConverter.toDto(updated));
     }
 
     @Override
