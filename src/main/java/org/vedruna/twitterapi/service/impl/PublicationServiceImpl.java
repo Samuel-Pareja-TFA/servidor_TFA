@@ -52,14 +52,14 @@ public class PublicationServiceImpl implements PublicationService {
     @Transactional(readOnly = true)
     public Page<PublicationEntity> getPublicationsOfFollowing(Integer userId, Pageable pageable) {
         log.info("Obteniendo publicaciones de los usuarios que sigue userId {}", userId);
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
 
-        List<UserEntity> following = user.getFollowing() == null
-                ? List.of()
-                : user.getFollowing().stream().collect(Collectors.toList());
+        // verificamos existencia del usuario (lanza UserNotFoundException si no existe)
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("User not found with id " + userId);
+        }
 
-        return publicationRepository.findAllByUserIn(following, pageable);
+        // Usamos un query que hace JOIN en BD y evita inicializar colecciones en entidades
+        return publicationRepository.findAllByUserInFollowing(userId, pageable);
     }
 
     @Override

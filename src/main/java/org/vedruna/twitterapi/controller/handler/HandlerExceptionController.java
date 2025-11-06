@@ -32,6 +32,7 @@ import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.vedruna.twitterapi.service.exception.UserNotFoundException;
 import org.vedruna.twitterapi.service.exception.PublicationNotFoundException;
+import org.vedruna.twitterapi.service.exception.AuthenticationFailedException;
 
 /**
  * Controlador global de manejo de excepciones (RestControllerAdvice).
@@ -105,6 +106,26 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         problemDetail.setTitle("UserNotFoundException: User Not Found");
         log.warn("User Not Found (404): {}", ex.toString());
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    /**
+     * Maneja la excepción personalizada {@code AuthenticationFailedException}
+     * cuando las credenciales no son válidas en el login.
+     * Genera una respuesta 401 Unauthorized con ProblemDetail.
+     */
+    @ExceptionHandler(AuthenticationFailedException.class)
+    protected ResponseEntity<Object> handleAuthenticationFailed(AuthenticationFailedException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.UNAUTHORIZED,
+            ex.getMessage() != null ? ex.getMessage() : "Authentication failed: invalid credentials"
+        );
+        problemDetail.setTitle("AuthenticationFailedException: Invalid credentials");
+        // Tipo apuntando a docu (puedes cambiar a una URL de tu API si quieres)
+        problemDetail.setType(URI.create("https://datatracker.ietf.org/doc/html/rfc7235#section-3.1"));
+        // Puedes añadir propiedades adicionales si te interesa (ej. reason, code)
+        problemDetail.setProperty("reason", "invalid_credentials");
+        log.warn("Authentication failed (401): {}", ex.toString());
+        return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)

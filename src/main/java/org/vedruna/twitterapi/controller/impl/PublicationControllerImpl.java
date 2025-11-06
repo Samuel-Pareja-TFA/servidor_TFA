@@ -10,6 +10,7 @@ import org.vedruna.twitterapi.controller.PublicationController;
 import org.vedruna.twitterapi.controller.converter.PublicationConverter;
 import org.vedruna.twitterapi.controller.dto.CreatePublicationDto;
 import org.vedruna.twitterapi.controller.dto.PublicationDto;
+import org.vedruna.twitterapi.controller.dto.UpdatePublicationDto;
 import org.vedruna.twitterapi.persistance.entity.PublicationEntity;
 import org.vedruna.twitterapi.service.PublicationService;
 
@@ -59,11 +60,11 @@ public class PublicationControllerImpl implements PublicationController {
     }
 
     @Override
-    public ResponseEntity<PublicationDto> updatePublication(Integer publicationId, @Valid CreatePublicationDto dto) {
-        log.info("Update publication {}", publicationId);
-        PublicationEntity entity = publicationConverter.toEntity(dto);
-        PublicationEntity updated = publicationService.updatePublication(publicationId, entity);
-        return ResponseEntity.ok(publicationConverter.toDto(updated));
+    public ResponseEntity<PublicationDto> updatePublication(Integer publicationId, @Valid UpdatePublicationDto dto) {
+    log.info("Update publication {}", publicationId);
+    PublicationEntity entity = publicationConverter.toEntity(dto); // ver PublicationConverter
+    PublicationEntity updated = publicationService.updatePublication(publicationId, entity);
+    return ResponseEntity.ok(publicationConverter.toDto(updated));
     }
 
     @Override
