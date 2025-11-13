@@ -5,7 +5,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * DTO para actualizar una publicación. Solo permite cambiar el texto.
+ * DTO para actualizar el texto de una publicación existente.
+ *
+ * <p>Se utiliza en endpoints de actualización de publicaciones (solo permite editar el contenido).</p>
+ *
+ * <p>Validación:
+ * <ul>
+ *   <li>{@code text} no puede estar vacío.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO para editar una publicación (solo text)")

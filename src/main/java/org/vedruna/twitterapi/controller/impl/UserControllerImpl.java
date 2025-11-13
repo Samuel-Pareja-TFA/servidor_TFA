@@ -27,9 +27,25 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementación REST del UserController.
+ * Implementación REST de {@link UserController}.
  *
- * Login temporal delegando a AuthService (sin Spring Security).
+ * <p>Provee los endpoints de usuario, incluyendo registro, login, actualización de username,
+ * y recuperación de listas de seguidores y seguidos. Maneja la autorización de forma que:
+ * <ul>
+ *   <li>Solo el propio usuario o un administrador puede acceder a sus seguidores o seguidos.</li>
+ *   <li>El registro y login son públicos.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Usa:
+ * <ul>
+ *   <li>{@link UserService} para la lógica de negocio relacionada con usuarios.</li>
+ *   <li>{@link UserConverter} para convertir entre {@link UserEntity} y {@link UserDto}.</li>
+ *   <li>{@link AuthService} para la autenticación y generación de tokens JWT.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Logging: se registran eventos importantes de cada endpoint usando {@code log} de Lombok.</p>
  */
 @AllArgsConstructor
 @CrossOrigin
@@ -41,6 +57,12 @@ public class UserControllerImpl implements UserController {
     private final UserConverter userConverter;
     private final AuthService authService; // <-- inyectado
 
+    /**
+     * Registro público de usuario.
+     *
+     * @param dto DTO con datos del usuario a registrar
+     * @return {@link ResponseEntity} con el usuario creado y código HTTP 201 Created
+     */
     @Override
     public ResponseEntity<UserDto> registerUser(@Valid CreateUserDto dto) {
         log.info("Register request for username {}", dto.getUsername());
@@ -49,6 +71,12 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userConverter.toDto(saved));
     }
 
+    /**
+     * Login público de usuario.
+     *
+     * @param dto DTO con credenciales de usuario
+     * @return {@link ResponseEntity} con {@link TokenDto} y código HTTP 200 OK
+     */
     @Override
     public ResponseEntity<TokenDto> login(@Valid LoginDto dto) {
         log.info("Login attempt for username {}", dto.getUsername());
@@ -56,6 +84,13 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(token);
     }
 
+    /**
+     * Actualiza solo el username de un usuario autenticado.
+     *
+     * @param userId id del usuario
+     * @param partialDto DTO con el nuevo username
+     * @return {@link ResponseEntity} con {@link UserDto} actualizado
+     */
     @Override
     public ResponseEntity<UserDto> updateUsername(Integer userId, @Valid UpdateUsernameDto partialDto) {
     log.info("Update username for userId {} -> {}", userId, partialDto.getUsername());
@@ -63,6 +98,12 @@ public class UserControllerImpl implements UserController {
     return ResponseEntity.ok(userConverter.toDto(updated));
     }
 
+     /**
+     * Recupera un usuario por su username.
+     *
+     * @param username nombre de usuario
+     * @return {@link ResponseEntity} con {@link UserDto}
+     */
     @Override
     public ResponseEntity<UserDto> getUserByUsername(String username) {
         log.info("Get user by username {}", username);
@@ -70,6 +111,15 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(userConverter.toDto(u));
     }
 
+    /**
+     * Obtiene los usuarios que sigue un usuario dado.
+     *
+     * <p>Solo el propio usuario o un administrador puede consultar esta información.
+     *
+     * @param userId id del usuario
+     * @param pageable información de paginación
+     * @return {@link ResponseEntity} con {@link Page} de {@link UserDto}
+     */
     @Override
     public ResponseEntity<Page<UserDto>> getFollowing(Integer userId, Pageable pageable) {
     log.info("Get following for userId {}", userId);
@@ -111,12 +161,17 @@ public class UserControllerImpl implements UserController {
     return ResponseEntity.ok(page.map(userConverter::toDto));
     }
 
-/**
- * Obtener los followers de un usuario (privado).
- * Solo permite acceder si el usuario autenticado es el mismo userId o tiene ROLE_ADMIN.
- */
-@Override
-public ResponseEntity<Page<UserDto>> getFollowers(Integer userId, Pageable pageable) {
+    /**
+     * Obtiene los seguidores de un usuario dado.
+     *
+     * <p>Solo el propio usuario o un administrador puede consultar esta información.
+     *
+     * @param userId id del usuario
+     * @param pageable información de paginación
+     * @return {@link ResponseEntity} con {@link Page} de {@link UserDto}
+     */
+    @Override
+    public ResponseEntity<Page<UserDto>> getFollowers(Integer userId, Pageable pageable) {
     log.info("Get followers for userId {}", userId);
 
     // 1) Obtener el principal de seguridad

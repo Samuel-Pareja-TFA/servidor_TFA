@@ -23,31 +23,56 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.http.HttpStatus;
-import java.net.URI;
+
 
 import jakarta.persistence.RollbackException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import jakarta.validation.ValidationException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.vedruna.twitterapi.service.exception.UserNotFoundException;
 import org.vedruna.twitterapi.service.exception.PublicationNotFoundException;
 import org.vedruna.twitterapi.service.exception.AuthenticationFailedException;
 
 /**
- * Controlador global de manejo de excepciones (RestControllerAdvice).
- * Convierte excepciones lanzadas por la aplicación en respuestas HTTP
- * con {@link ProblemDetail} y códigos de estado adecuados.
+ * Controlador global de manejo de excepciones para la API.
  *
- * Extiende {@link ResponseEntityExceptionHandler} para sobreescribir y reutilizar
- * handlers de Spring MVC (ej. body mal formado, validaciones de @Valid, etc.).
+ * <p>Este {@link RestControllerAdvice} captura excepciones lanzadas en cualquier
+ * controlador REST y convierte los errores en respuestas HTTP con {@link ProblemDetail},
+ * incluyendo un código de estado adecuado, título, detalle y tipo (URI de referencia).</p>
+ *
+ * <p>Incluye manejo de:
+ * <ul>
+ *   <li>Excepciones de validación y desajuste de tipo</li>
+ *   <li>Excepciones de base de datos (integridad y resultados vacíos)</li>
+ *   <li>Excepciones personalizadas de negocio (usuario o publicación no encontrada, login fallido)</li>
+ *   <li>Excepciones de transacción (RollbackException)</li>
+ *   <li>Otros errores HTTP (método no soportado, cuerpo mal formado, propiedades inválidas)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Excepciones personalizadas:
+ * <ul>
+ *   <li>{@link UserNotFoundException}: usuario no encontrado (404)</li>
+ *   <li>{@link PublicationNotFoundException}: publicación no encontrada (404)</li>
+ *   <li>{@link AuthenticationFailedException}: login fallido (401)</li>
+ * </ul>
+ * </p>
  */
 @Slf4j
 @RestControllerAdvice
 public class HandlerExceptionController extends ResponseEntityExceptionHandler {
 
+     /**
+     * Maneja errores cuando un parámetro no coincide con el tipo esperado.
+     * Ej: ?id=abc cuando se esperaba un Integer.
+     *
+     * @param ex la excepción lanzada
+     * @param request el contexto de la petición
+     * @return {@link ResponseEntity} con status 400 y detalle del error
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -64,6 +89,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+     /**
+     * Maneja errores de validación inesperados (tipo de campo incorrecto en anotaciones de validación).
+     */
     @ExceptionHandler(UnexpectedTypeException.class)
     protected ResponseEntity<Object> handleUnexpectedType(UnexpectedTypeException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -76,6 +104,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    /**
+     * Maneja {@link IllegalArgumentException} lanzadas por lógica de negocio inválida.
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -88,6 +119,10 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    
+    /**
+     * Maneja {@link PublicationNotFoundException} cuando una publicación no existe.
+     */
     @ExceptionHandler(PublicationNotFoundException.class)
     protected ResponseEntity<Object> handlePublicationNotFound(PublicationNotFoundException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -99,6 +134,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+    /**
+     * Maneja {@link UserNotFoundException} cuando un usuario no existe.
+     */
     @ExceptionHandler(UserNotFoundException.class)
     protected ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -130,6 +168,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
+     /**
+     * Maneja {@link EmptyResultDataAccessException} cuando la entidad no existe en la BD.
+     */
     @ExceptionHandler(EmptyResultDataAccessException.class)
     protected ResponseEntity<Object> handleEmptyResultDataAccess(EmptyResultDataAccessException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -142,6 +183,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+     /**
+     * Maneja {@link DataIntegrityViolationException} para conflictos de integridad de datos (unique o FK).
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -154,6 +198,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
+    /**
+     * Maneja {@link HttpMessageNotReadableException} cuando el cuerpo de la petición es inválido o mal formado.
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
         HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -168,6 +215,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    /**
+    * Maneja {@link ConstraintViolationException} lanzadas por violaciones de restricciones de validación.
+    */
     @ExceptionHandler(ConstraintViolationException.class)
     protected ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
         Map<String, String> errors = ex.getConstraintViolations().stream()
@@ -188,6 +238,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    /**
+     * Maneja {@link MethodArgumentNotValidException} lanzadas cuando la validación de un objeto falla.
+     */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
         MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -210,6 +263,12 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, headers, HttpStatus.BAD_REQUEST, request);
     }
 
+    /**
+     * Maneja {@link ValidationException} genéricas de validación.
+     * @param ex
+     * @param request
+     * @return
+     */
     @ExceptionHandler(ValidationException.class)
     protected ResponseEntity<Object> handleValidation(ValidationException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -222,6 +281,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    /**
+     * Maneja {@link RollbackException} lanzadas cuando una transacción falla y se revierte.
+     */
     @ExceptionHandler(RollbackException.class)
     protected ResponseEntity<Object> handleRollBack(RollbackException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -234,6 +296,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
+    /**
+     * Maneja {@link HttpRequestMethodNotSupportedException} cuando el método HTTP no es soportado por el endpoint.
+     */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
         HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -257,6 +322,9 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problemDetail, headers, HttpStatus.METHOD_NOT_ALLOWED, request);
     }
 
+    /**
+     * Maneja {@link PropertyReferenceException} cuando una propiedad inválida es usada en sorting o searching.
+     */
     @ExceptionHandler(PropertyReferenceException.class)
     protected ResponseEntity<Object> handlePropertyReference(PropertyReferenceException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(

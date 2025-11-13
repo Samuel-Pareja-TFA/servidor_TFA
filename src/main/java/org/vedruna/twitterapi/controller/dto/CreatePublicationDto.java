@@ -8,6 +8,15 @@ import lombok.Data;
 
 /**
  * DTO para crear o actualizar una publicación.
+ *
+ * <p>Se utiliza en los endpoints de creación y edición de publicaciones.
+ * Solo permite establecer el contenido ({@code text}) de la publicación.</p>
+ *
+ * <p>Validaciones:
+ * <ul>
+ *   <li>{@code text} obligatorio, longitud entre 1 y 280 caracteres.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO para crear o editar una publicación")

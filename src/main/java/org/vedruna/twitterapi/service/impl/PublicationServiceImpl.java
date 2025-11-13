@@ -1,8 +1,6 @@
 package org.vedruna.twitterapi.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,14 +19,35 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementación de PublicationService.
+ * Implementación del servicio de publicaciones de la aplicación.
+ *
+ * <p>Responsabilidades:
+ * <ul>
+ *   <li>Proveer operaciones CRUD sobre {@link PublicationEntity}.</li>
+ *   <li>Validar precondiciones de negocio (existencia de usuario, integridad de la entidad
+ *       antes de persistir, manejo de timestamps).</li>
+ *   <li>Delegar consultas paginadas al repositorio y encapsular excepciones de dominio
+ *       como {@link PublicationNotFoundException} o {@link PublicationConflictException}.</li>
+ * </ul>
+ *
+ * <p>Notas de implementación:
+ * <ul>
+ *   <li>Las operaciones de lectura usan transacciones marcadas como {@code readOnly=true} para
+ *       optimizar el acceso a la base de datos.</li>
+ *   <li>Los métodos de escritura gestionan timestamps locales con {@link LocalDateTime#now()} y
+ *       preservan la integridad referencial resolviendo entidades relacionadas (por ejemplo
+ *       {@link UserEntity}) antes de persistir.</li>
+ * </ul>
  */
 @Slf4j
 @AllArgsConstructor
 @Service
 public class PublicationServiceImpl implements PublicationService {
 
+    /** Repositorio para publicaciones. */
     private final PublicationRepository publicationRepository;
+
+    /** Repositorio para usuarios (usado para validar existencia y resolver relaciones). */
     private final UserRepository userRepository;
 
     @Override
@@ -51,9 +70,9 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     @Transactional(readOnly = true)
     public PublicationEntity getPublicationById(Integer publicationId) {
-        log.info("Obteniendo publicación id {}", publicationId);
-        return publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
+    log.info("Obteniendo publicación id {}", publicationId);
+    return publicationRepository.findById(publicationId)
+        .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
     }
 
 
@@ -94,16 +113,16 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     @Transactional
     public PublicationEntity updatePublication(Integer publicationId, PublicationEntity publication) {
-        log.info("Actualizando publicación id {}", publicationId);
-        PublicationEntity existing = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
+    log.info("Actualizando publicación id {}", publicationId);
+    PublicationEntity existing = publicationRepository.findById(publicationId)
+        .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
 
-        existing.setText(publication.getText());
-        existing.setUpdateDate(LocalDateTime.now());
+    existing.setText(publication.getText());
+    existing.setUpdateDate(LocalDateTime.now());
 
-        PublicationEntity updated = publicationRepository.save(existing);
-        log.info("Publicación actualizada id {}", updated.getId());
-        return updated;
+    PublicationEntity updated = publicationRepository.save(existing);
+    log.info("Publicación actualizada id {}", updated.getId());
+    return updated;
     }
 
     @Override

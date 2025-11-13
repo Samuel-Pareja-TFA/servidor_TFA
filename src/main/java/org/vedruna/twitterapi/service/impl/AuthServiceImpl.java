@@ -16,20 +16,48 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementación temporal de autenticación:
- * - Busca usuario por username
- * - Compara la contraseña en claro (solo para pruebas)
- * - Devuelve un token ficticio (UUID)
+ * Implementación simple y temporal del servicio de autenticación.
  *
- * NOTA: Reemplazar por Spring Security + JWT + BCrypt para la versión final.
+ * <p>Esta implementación está pensada únicamente para pruebas y demostraciones. Su flujo es el
+ * siguiente:
+ * <ol>
+ *   <li>Busca el usuario por {@code username} usando {@link UserRepository}.</li>
+ *   <li>Compara la contraseña en texto plano (NO SE DEBE USAR EN PRODUCCIÓN).</li>
+ *   <li>Genera y devuelve un token ficticio (UUID) empaquetado en {@link TokenDto}.</li>
+ * </ol>
+ *
+ * <p>Importante: en una aplicación productiva este servicio debería:
+ * <ul>
+ *   <li>Usar BCrypt (o scrypt/argon2) para almacenar/validar contraseñas.</li>
+ *   <li>Emitir JWT firmado (o tokens opacos gestionados por un proveedor), no UUIDs aleatorios.</li>
+ *   <li>Integrarse con Spring Security para gestión de contexto de seguridad y filtros.</li>
+ * </ul>
  */
 @Slf4j
 @AllArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    /** Repositorio usado para buscar usuarios por username. */
     private final UserRepository userRepository;
 
+    /**
+     * Intenta autenticar un usuario con las credenciales proporcionadas en {@link LoginDto}.
+     *
+     * <p>Comportamiento:
+     * <ol>
+     *   <li>Busca el usuario por username; si no existe lanza {@link UserNotFoundException}.</li>
+     *   <li>Compara la contraseña en claro (temporal); si no coincide lanza
+     *       {@link AuthenticationFailedException}.</li>
+     *   <li>Genera un token aleatorio (UUID) y lo devuelve en un {@link TokenDto}.
+     *       Este token no provee ninguna firma ni expiración y sólo sirve para pruebas.</li>
+     * </ol>
+     *
+     * @param loginDto DTO con username y password en texto plano.
+     * @return {@link TokenDto} que contiene el token generado para la sesión (ficticio).
+     * @throws UserNotFoundException si no existe un usuario con el username proporcionado.
+     * @throws AuthenticationFailedException si la contraseña no coincide.
+     */
     @Override
     @Transactional(readOnly = true)
     public TokenDto login(LoginDto loginDto) {

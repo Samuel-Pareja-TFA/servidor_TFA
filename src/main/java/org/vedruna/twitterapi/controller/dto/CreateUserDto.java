@@ -7,7 +7,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * DTO para el registro de usuario (request).
+ * DTO para registrar un nuevo usuario.
+ *
+ * <p>Se utiliza en el endpoint {@code POST /api/v1/users/register}.</p>
+ *
+ * <p>Validaciones:
+ * <ul>
+ *   <li>{@code username} obligatorio, único, longitud entre 3 y 20 caracteres.</li>
+ *   <li>{@code password} obligatorio, longitud entre 8 y 60 caracteres.</li>
+ *   <li>{@code email} obligatorio, formato de email válido, longitud máxima 90.</li>
+ *   <li>{@code description} opcional, longitud máxima 2000.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO para crear un usuario (registro)")
