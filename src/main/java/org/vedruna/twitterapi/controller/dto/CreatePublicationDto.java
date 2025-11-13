@@ -13,9 +13,9 @@ import lombok.Data;
 @Schema(description = "DTO para crear o editar una publicación")
 public class CreatePublicationDto {
 
-    @Schema(description = "Id del usuario autor de la publicación", example = "2", required = true)
-    @NotNull(message = "userId is required")
-    private Integer userId;
+    // @Schema(description = "Id del usuario autor de la publicación", example = "2", required = true)
+    // @NotNull(message = "userId is required")
+    // private Integer userId;
 
     @Schema(description = "Contenido de la publicación (max 280 chars)", example = "Mi primera publicación!", required = true)
     @NotBlank(message = "text is required")

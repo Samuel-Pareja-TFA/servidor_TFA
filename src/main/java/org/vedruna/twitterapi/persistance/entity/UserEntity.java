@@ -1,10 +1,17 @@
 package org.vedruna.twitterapi.persistance.entity;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Entidad Users (tabla users).
@@ -12,7 +19,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "users")
-public class UserEntity {
+public class UserEntity implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +43,7 @@ public class UserEntity {
     private LocalDate createDate;
 
     // Relación con roles
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private RoleEntity role;
 
@@ -62,4 +69,75 @@ public class UserEntity {
      */
     @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
     private Set<UserEntity> followers;
+
+
+     /* -----------------------------
+       Métodos de UserDetails
+       ----------------------------- */
+
+    /**
+     * Devuelve las authorities/granted authorities a partir del role asociado.
+     * Si no hay role, devuelve una colección vacía.
+     *
+     * Por convención añadimos el prefijo "ROLE_" y lo ponemos en mayúsculas.
+     */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.role == null || this.role.getName() == null) {
+            return Collections.emptyList();
+        }
+        String authority = "ROLE_" + this.role.getName().toUpperCase();
+        return List.of(new SimpleGrantedAuthority(authority));
+    }
+
+    /**
+     * Username para Spring Security (ya existía el campo username).
+     */
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    /**
+     * Password para Spring Security (ya existía el campo password).
+     */
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    /**
+     * Indica si la cuenta no ha expirado.
+     * En esta implementación siempre true (como en el ejemplo del profesor).
+     * Puedes cambiar la lógica si necesitas controlar expiraciones.
+     */
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    /**
+     * Indica si la cuenta no está bloqueada.
+     */
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    /**
+     * Indica si las credenciales no han expirado.
+     */
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    /**
+     * Indica si el usuario está habilitado.
+     */
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
 }

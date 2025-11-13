@@ -10,3 +10,9 @@ spring:
     jpa:
         hibernate:
             ddl-auto: validate
+
+auth:
+    access-token-secret-key: lMCvj7Sirkk41OpuXDBKoSA1YeQ4aTeHmP4gzoyoaLk=
+    access-token-expiration: 180000
+    refresh-token-secret-key: laCvj7Sirkk41OpuXDBKoSA1YeQ4aTeHmP4gzoyoaLk=
+    refresh-token-expiration: 604800000  

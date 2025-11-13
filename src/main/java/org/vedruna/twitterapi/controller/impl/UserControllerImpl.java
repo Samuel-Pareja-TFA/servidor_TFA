@@ -17,6 +17,11 @@ import org.vedruna.twitterapi.persistance.entity.UserEntity;
 import org.vedruna.twitterapi.service.AuthService;
 import org.vedruna.twitterapi.service.UserService;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,15 +72,80 @@ public class UserControllerImpl implements UserController {
 
     @Override
     public ResponseEntity<Page<UserDto>> getFollowing(Integer userId, Pageable pageable) {
-        log.info("Get following for userId {}", userId);
-        Page<UserEntity> page = userService.getFollowing(userId, pageable);
-        return ResponseEntity.ok(page.map(userConverter::toDto));
+    log.info("Get following for userId {}", userId);
+
+    // 1) Obtener el principal de seguridad (puede ser UserEntity o UserDetails)
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    Object principal = auth != null ? auth.getPrincipal() : null;
+
+    // 2) Extraer id del usuario autenticado y roles
+    Integer authUserId = null;
+    boolean isAdmin = false;
+
+    if (principal instanceof UserEntity) {
+        UserEntity ue = (UserEntity) principal;
+        authUserId = ue.getId();
+        isAdmin = ue.getAuthorities().stream()
+                     .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    } else if (principal instanceof UserDetails) {
+        // Si tu UserDetails no expone id, no podemos comparar ids.
+        // Pero podemos comprobar roles a partir de authorities.
+        UserDetails ud = (UserDetails) principal;
+        isAdmin = ud.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        // authUserId queda null (no tenemos id)
+    } else {
+        // principal puede ser "anonymousUser" u otro tipo: denegar por defecto
+        throw new AccessDeniedException("Access denied: unauthenticated principal");
     }
 
-    @Override
-    public ResponseEntity<Page<UserDto>> getFollowers(Integer userId, Pageable pageable) {
-        log.info("Get followers for userId {}", userId);
-        Page<UserEntity> page = userService.getFollowers(userId, pageable);
-        return ResponseEntity.ok(page.map(userConverter::toDto));
+    // 3) Comprobación de permiso: solo el mismo usuario o admin
+    boolean isSameUser = (authUserId != null && authUserId.equals(userId));
+
+    if (!isSameUser && !isAdmin) {
+        throw new AccessDeniedException("Access denied: cannot view other users' following");
+    }
+
+    // 4) Ejecutar la lógica normal si está autorizado
+    Page<UserEntity> page = userService.getFollowing(userId, pageable);
+    return ResponseEntity.ok(page.map(userConverter::toDto));
+    }
+
+/**
+ * Obtener los followers de un usuario (privado).
+ * Solo permite acceder si el usuario autenticado es el mismo userId o tiene ROLE_ADMIN.
+ */
+@Override
+public ResponseEntity<Page<UserDto>> getFollowers(Integer userId, Pageable pageable) {
+    log.info("Get followers for userId {}", userId);
+
+    // 1) Obtener el principal de seguridad
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    Object principal = auth != null ? auth.getPrincipal() : null;
+
+    Integer authUserId = null;
+    boolean isAdmin = false;
+
+    if (principal instanceof UserEntity) {
+        UserEntity ue = (UserEntity) principal;
+        authUserId = ue.getId();
+        isAdmin = ue.getAuthorities().stream()
+                     .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    } else if (principal instanceof UserDetails) {
+        UserDetails ud = (UserDetails) principal;
+        isAdmin = ud.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        // authUserId queda null si no tenemos id en UserDetails
+    } else {
+        throw new AccessDeniedException("Access denied: unauthenticated principal");
+    }
+
+    boolean isSameUser = (authUserId != null && authUserId.equals(userId));
+    if (!isSameUser && !isAdmin) {
+        throw new AccessDeniedException("Access denied: cannot view other users' followers");
+    }
+
+    Page<UserEntity> page = userService.getFollowers(userId, pageable);
+    return ResponseEntity.ok(page.map(userConverter::toDto));
     }
 }

@@ -33,7 +33,7 @@ public interface PublicationConverter {
      * a partir de dto.userId para que publication.getUser().getId() no sea null.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(source = "userId", target = "user.id")
+    // @Mapping(source = "userId", target = "user.id")
     @Mapping(target = "createDate", ignore = true)
     @Mapping(target = "updateDate", ignore = true)
     PublicationEntity toEntity(CreatePublicationDto dto);

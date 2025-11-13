@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.http.HttpStatus;
+import java.net.URI;
 
 import jakarta.persistence.RollbackException;
 import jakarta.validation.ConstraintViolation;
@@ -267,4 +269,7 @@ public class HandlerExceptionController extends ResponseEntityExceptionHandler {
         log.warn("Property Reference Exception (400): {}", ex.toString());
         return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
+
+    
+    
 }

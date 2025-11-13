@@ -11,6 +11,10 @@ import org.vedruna.twitterapi.controller.dto.CreatePublicationDto;
 import org.vedruna.twitterapi.controller.dto.PublicationDto;
 import org.vedruna.twitterapi.controller.dto.UpdatePublicationDto;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.vedruna.twitterapi.persistance.entity.UserEntity;
+
+
 /**
  * Endpoints para publicaciones (timeline, CRUD publicaciones).
  */
@@ -18,6 +22,8 @@ import org.vedruna.twitterapi.controller.dto.UpdatePublicationDto;
 @Validated
 @RequestMapping("/api/v1/publications")
 public interface PublicationController {
+
+    
 
     /**
      * Obtener todas las publicaciones (privado).
@@ -30,6 +36,8 @@ public interface PublicationController {
      */
     @GetMapping("/user/{userId}")
     ResponseEntity<Page<PublicationDto>> getPublicationsByUser(@PathVariable Integer userId, Pageable pageable);
+
+    
 
     /**
      * Obtener publicaciones de los usuarios que sigue un usuario (timeline) (privado).
@@ -48,7 +56,7 @@ public interface PublicationController {
      */
     @PutMapping("/{publicationId}")
     ResponseEntity<PublicationDto> updatePublication(@PathVariable Integer publicationId,
-                                                 @RequestBody @Valid UpdatePublicationDto dto);
+                                                 @RequestBody @Valid CreatePublicationDto dto);
 
     /**
      * Borrar publicación (privado).
