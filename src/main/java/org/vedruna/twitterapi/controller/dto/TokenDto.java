@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO simple para devolver un token (temporal).
+ * DTO simple para devolver un token de autenticación.
+ *
+ * <p>Usado temporalmente para login.</p>
  */
 @Data
 @AllArgsConstructor

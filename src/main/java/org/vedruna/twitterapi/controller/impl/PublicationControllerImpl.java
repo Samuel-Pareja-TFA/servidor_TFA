@@ -33,7 +33,27 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementación REST del PublicationController.
+ * Implementación REST de {@link PublicationController}.
+ *
+ * <p>Proporciona endpoints para CRUD de publicaciones, incluyendo:
+ * <ul>
+ *   <li>Obtención de todas las publicaciones (privado)</li>
+ *   <li>Obtención de publicaciones de un usuario específico (público)</li>
+ *   <li>Timeline de usuarios seguidos (privado)</li>
+ *   <li>Creación, actualización y eliminación de publicaciones (privado)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>La autorización se realiza para que solo el autor de la publicación o un
+ * administrador pueda modificar o eliminar publicaciones ajenas.</p>
+ *
+ * <p>Se usan los siguientes componentes:
+ * <ul>
+ *   <li>{@link PublicationService} para la lógica de negocio</li>
+ *   <li>{@link PublicationConverter} para convertir entidades a DTOs</li>
+ * </ul>
+ *
+ * <p>Se registra información de cada operación usando {@code log} de Lombok.</p>
  */
 @AllArgsConstructor
 @CrossOrigin
@@ -45,7 +65,21 @@ public class PublicationControllerImpl implements PublicationController {
     private final PublicationConverter publicationConverter;
     
     
-
+    /**
+     * Obtiene todas las publicaciones existentes en el sistema.
+     *
+     * <p>Este endpoint es privado y requiere que el usuario esté autenticado.
+     * Se devuelve una página de publicaciones ({@link Page}) convertidas a DTO ({@link PublicationDto}).</p>
+     *
+     * <p>El método utiliza {@link PublicationService#getAllPublications(Pageable)}
+     * para obtener las entidades de la base de datos y {@link PublicationConverter#toDto(PublicationEntity)}
+     * para mapear cada entidad a DTO.</p>
+     *
+     * <p>Logging: se registra un mensaje informativo indicando que se han solicitado todas las publicaciones.</p>
+     *
+     * @param pageable objeto de paginación que define la página, tamaño y orden de los resultados
+     * @return {@link ResponseEntity} con la página de {@link PublicationDto} y código HTTP 200 OK
+     */
     @Override
     public ResponseEntity<Page<PublicationDto>> getAllPublications(Pageable pageable) {
         log.info("Get all publications");
@@ -53,6 +87,22 @@ public class PublicationControllerImpl implements PublicationController {
         return ResponseEntity.ok(page.map(publicationConverter::toDto));
     }
 
+    /**
+     * Obtiene todas las publicaciones de un usuario específico.
+     *
+     * <p>Este endpoint es público: cualquier usuario puede consultar las publicaciones de otro usuario
+     * especificando su {@code userId}.</p>
+     *
+     * <p>Se utiliza {@link PublicationService#getPublicationsByUser(Integer, Pageable)}
+     * para obtener las publicaciones de la base de datos y {@link PublicationConverter#toDto(PublicationEntity)}
+     * para convertir cada entidad en un DTO.</p>
+     *
+     * <p>Logging: se registra el id del usuario cuyas publicaciones se están solicitando.</p>
+     *
+     * @param userId id del usuario cuyas publicaciones se desean consultar
+     * @param pageable objeto de paginación que define la página, tamaño y orden de los resultados
+     * @return {@link ResponseEntity} con la página de {@link PublicationDto} y código HTTP 200 OK
+     */
     @Override
     public ResponseEntity<Page<PublicationDto>> getPublicationsByUser(Integer userId, Pageable pageable) {
         log.info("Get publications by user {}", userId);
@@ -60,6 +110,29 @@ public class PublicationControllerImpl implements PublicationController {
         return ResponseEntity.ok(page.map(publicationConverter::toDto));
     }
 
+    /**
+     * Obtiene el timeline de un usuario, es decir, todas las publicaciones de los usuarios
+     * que sigue el usuario autenticado.
+     *
+     * <p>Este endpoint es privado: solo el propio usuario o un administrador puede consultar su timeline.
+     * Se fuerza el uso del usuario autenticado para garantizar seguridad.</p>
+     *
+     * <p>Se realiza:
+     * <ul>
+     *   <li>Obtención del principal autenticado del contexto de seguridad.</li>
+     *   <li>Comprobación de roles y permisos (solo el usuario mismo o admin puede acceder).</li>
+     *   <li>Obtención de publicaciones mediante {@link PublicationService#getPublicationsOfFollowing(Integer, Pageable)}</li>
+     *   <li>Conversión de entidades a DTOs mediante {@link PublicationConverter#toDto(PublicationEntity)}</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Logging: se registra el id del usuario cuyo timeline se está consultando.</p>
+     *
+     * @param userId id del usuario para el que se solicita el timeline (se ignora y se fuerza al usuario autenticado)
+     * @param pageable objeto de paginación que define la página, tamaño y orden de los resultados
+     * @return {@link ResponseEntity} con la página de {@link PublicationDto} y código HTTP 200 OK
+     * @throws AccessDeniedException si el usuario no está autenticado o intenta acceder al timeline de otro usuario
+     */
     @Override
     public ResponseEntity<Page<PublicationDto>> getTimeline(Integer userId, Pageable pageable) {
         log.info("Get timeline for userId {}", userId);
@@ -99,7 +172,27 @@ public class PublicationControllerImpl implements PublicationController {
         return ResponseEntity.ok(dtoPage);
     }
 
-
+    /**
+     * Crea una nueva publicación asociada al usuario autenticado.
+     *
+     * <p>Este endpoint es privado y requiere que el usuario esté autenticado.
+     * La fecha de creación se establece automáticamente.</p>
+     *
+     * <p>Se realiza:
+     * <ul>
+     *   <li>Obtención del usuario autenticado del contexto de seguridad.</li>
+     *   <li>Creación de una {@link PublicationEntity} con el texto recibido y fecha actual.</li>
+     *   <li>Guardado de la entidad mediante {@link PublicationService#createPublication(PublicationEntity)}.</li>
+     *   <li>Conversión de la entidad a DTO mediante {@link PublicationConverter#toDto(PublicationEntity)}.</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Logging: se registra el texto de la publicación que se está creando.</p>
+     *
+     * @param dto DTO con la información de la publicación a crear
+     * @return {@link ResponseEntity} con {@link PublicationDto} de la publicación creada y código HTTP 201 Created
+     * @throws AccessDeniedException si el usuario no está autenticado
+     */
     @Override
     public ResponseEntity<PublicationDto> createPublication(@Valid CreatePublicationDto dto) {
     log.info("Create publication request: {}", dto.getText());
@@ -129,6 +222,29 @@ public class PublicationControllerImpl implements PublicationController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * Actualiza una publicación existente.
+     *
+     * <p>Solo el autor de la publicación o un administrador puede actualizarla.
+     * La fecha de actualización se establece automáticamente.</p>
+     *
+     * <p>Se realiza:
+     * <ul>
+     *   <li>Obtención del usuario autenticado y roles del contexto de seguridad.</li>
+     *   <li>Verificación de permisos: solo autor o admin.</li>
+     *   <li>Actualización del texto y fecha de la publicación.</li>
+     *   <li>Guardado de los cambios mediante {@link PublicationService#updatePublication(Integer, PublicationEntity)}.</li>
+     *   <li>Conversión de la entidad a DTO mediante {@link PublicationConverter#toDto(PublicationEntity)}.</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Logging: se registra el id de la publicación y el nuevo texto.</p>
+     *
+     * @param publicationId id de la publicación a actualizar
+     * @param dto DTO con la nueva información de la publicación
+     * @return {@link ResponseEntity} con {@link PublicationDto} de la publicación actualizada y código HTTP 200 OK
+     * @throws AccessDeniedException si el usuario no está autenticado o no es el autor/admin
+     */
     @Override
     public ResponseEntity<PublicationDto> updatePublication(Integer publicationId,
                                                         @Valid @RequestBody CreatePublicationDto dto) {
@@ -175,6 +291,25 @@ public class PublicationControllerImpl implements PublicationController {
     return ResponseEntity.ok(publicationConverter.toDto(saved));
     }
 
+    /**
+     * Elimina una publicación existente.
+     *
+     * <p>Solo el autor de la publicación o un administrador puede eliminarla.</p>
+     *
+     * <p>Se realiza:
+     * <ul>
+     *   <li>Obtención del usuario autenticado y roles del contexto de seguridad.</li>
+     *   <li>Verificación de permisos: solo autor o admin.</li>
+     *   <li>Eliminación de la publicación mediante {@link PublicationService#deletePublication(Integer)}.</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Logging: se registra el id de la publicación eliminada y el id del usuario que realizó la operación.</p>
+     *
+     * @param publicationId id de la publicación a eliminar
+     * @return {@link ResponseEntity} vacío con código HTTP 204 No Content
+     * @throws AccessDeniedException si el usuario no está autenticado o no es el autor/admin
+     */
     @Override
     public ResponseEntity<Void> deletePublication(Integer publicationId) {
     log.info("Delete publication request id {}", publicationId);

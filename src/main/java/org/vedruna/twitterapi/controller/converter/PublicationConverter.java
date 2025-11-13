@@ -11,15 +11,40 @@ import org.vedruna.twitterapi.persistance.entity.UserEntity;
 
 
 /**
- * Mapper para Publication <-> DTO.
+ * Mapper de MapStruct para convertir entre {@link PublicationEntity} y sus DTOs.
+ *
+ * <p>Este mapper permite:
+ * <ul>
+ *   <li>Convertir {@link PublicationEntity} a {@link PublicationDto} para exponer publicaciones.</li>
+ *   <li>Convertir {@link CreatePublicationDto} a {@link PublicationEntity} para crear nuevas publicaciones.</li>
+ *   <li>Convertir {@link UpdatePublicationDto} a {@link PublicationEntity} para actualizar solo el texto de publicaciones existentes.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Consideraciones:
+ * <ul>
+ *   <li>Al mapear a DTO, se incluyen los campos {@code userId} y {@code username} obtenidos de la entidad {@link UserEntity} asociada.</li>
+ *   <li>Al mapear desde DTOs de creación o actualización, se ignoran fechas de creación y actualización
+ *       y la referencia completa a {@code UserEntity} porque se gestiona en la capa de servicio.</li>
+ * </ul>
+ * </p>
  */
 @Mapper(componentModel = "spring")
 public interface PublicationConverter {
 
     /**
-     * Mapea PublicationEntity -> PublicationDto
-     * user.id -> userId
-     * user.username -> username
+     * Convierte una entidad {@link PublicationEntity} a su representación {@link PublicationDto}.
+     *
+     * <p>Mapeos específicos:
+     * <ul>
+     *   <li>{@code user.id} -> {@code userId}</li>
+     *   <li>{@code user.username} -> {@code username}</li>
+     *   <li>Otros campos simples ({@code id, text, createDate, updateDate}) se copian directamente.</li>
+     * </ul>
+     * </p>
+     *
+     * @param entity la entidad de publicación a convertir
+     * @return DTO de publicación
      */
     @Mapping(source = "id", target = "id")
     @Mapping(source = "user.id", target = "userId")
@@ -27,10 +52,19 @@ public interface PublicationConverter {
     PublicationDto toDto(PublicationEntity entity);
 
     /**
-     * Convierte CreatePublicationDto -> PublicationEntity.
-     * Se asume que el Service asignará el user real (UserEntity) antes de persistir,
-     * pero aquí pedimos a MapStruct que cree una UserEntity mínima con solo el id
-     * a partir de dto.userId para que publication.getUser().getId() no sea null.
+     * Convierte un {@link CreatePublicationDto} a {@link PublicationEntity}.
+     *
+     * <p>Se asume que el usuario asociado ({@link UserEntity}) será asignado en la capa de servicio antes de persistir.</p>
+     *
+     * <p>Campos ignorados:
+     * <ul>
+     *   <li>{@code id}: generado automáticamente por la BD.</li>
+     *   <li>{@code createDate} y {@code updateDate}: asignados por el Service al persistir.</li>
+     * </ul>
+     * </p>
+     *
+     * @param dto DTO de creación de publicación
+     * @return entidad {@link PublicationEntity} lista para persistir
      */
     @Mapping(target = "id", ignore = true)
     // @Mapping(source = "userId", target = "user.id")
@@ -38,7 +72,25 @@ public interface PublicationConverter {
     @Mapping(target = "updateDate", ignore = true)
     PublicationEntity toEntity(CreatePublicationDto dto);
 
-    // Nuevo: mapear UpdatePublicationDto -> PublicationEntity (solo text)
+        /**
+     * Convierte un {@link UpdatePublicationDto} a {@link PublicationEntity}.
+     *
+     * <p>Se utiliza para actualizar solo el campo {@code text} de publicaciones existentes.
+     * La entidad devuelta mantiene su usuario original y fechas de creación/actualización
+     * se gestionan en el Service.</p>
+     *
+     * <p>Campos ignorados:
+     * <ul>
+     *   <li>{@code id}</li>
+     *   <li>{@code user}</li>
+     *   <li>{@code createDate}</li>
+     *   <li>{@code updateDate}</li>
+     * </ul>
+     * </p>
+     *
+     * @param dto DTO con el texto actualizado
+     * @return entidad {@link PublicationEntity} lista para aplicar cambios
+     */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true) // la entidad existente debe mantener su user
     @Mapping(target = "createDate", ignore = true)

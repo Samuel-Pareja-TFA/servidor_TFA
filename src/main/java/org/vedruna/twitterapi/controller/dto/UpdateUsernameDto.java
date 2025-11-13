@@ -5,8 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * DTO para actualizar únicamente el username de un usuario.
- * Usado en el endpoint PATCH /api/v1/users/{userId}/username
+ * DTO para actualizar únicamente el nombre de usuario.
+ *
+ * <p>Se utiliza en el endpoint {@code PATCH /api/v1/users/{userId}/username}.</p>
+ *
+ * <p>Validación:
+ * <ul>
+ *   <li>{@code username} no puede estar vacío.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO para actualizar solo el username")

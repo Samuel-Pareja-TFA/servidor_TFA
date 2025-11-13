@@ -16,9 +16,28 @@ import org.vedruna.twitterapi.controller.dto.UserDto;
 
 
 /**
- * Endpoints relacionados con usuarios (registro, login, búsquedas y relaciones).
+ * Controlador REST que define los endpoints relacionados con usuarios.
  *
- * Nota: los DTOs referenciados deben crearse en la capa de controller.dto.
+ * <p>Incluye operaciones para:
+ * <ul>
+ *   <li>Registro de usuario (público)</li>
+ *   <li>Login de usuario (público)</li>
+ *   <li>Edición de nombre de usuario (privado)</li>
+ *   <li>Consulta de usuario por username (público)</li>
+ *   <li>Gestión de relaciones: following y followers (privado)</li>
+ * </ul>
+ *
+ * <p>Todos los métodos que exponen datos sensibles, como información de usuarios,
+ * requieren autorización y deben validar que el usuario autenticado tenga permisos
+ * adecuados. La respuesta de cada endpoint se encapsula en un {@link ResponseEntity}
+ * con el código HTTP correspondiente.</p>
+ *
+ * <p>Uso de DTOs:
+ * <ul>
+ *   <li>Evitan exponer información sensible (como contraseñas)</li>
+ *   <li>Validados mediante anotaciones de Hibernate Validation</li>
+ * </ul>
+ * </p>
  */
 @Tag(name = "Users", description = "User operations (register, login, follow lists, etc.)")
 @Validated
@@ -26,38 +45,60 @@ import org.vedruna.twitterapi.controller.dto.UserDto;
 public interface UserController {
 
     /**
-     * Registro público de usuario.
+     * Registro público de un nuevo usuario.
+     *
+     * @param dto DTO con los datos necesarios para registrar un usuario
+     * @return {@link ResponseEntity} con el {@link UserDto} creado y HTTP 201
      */
     @PostMapping("/register")
     ResponseEntity<UserDto> registerUser(@RequestBody @Valid CreateUserDto dto);
 
     /**
-     * Login público (devuelve token JWT u objeto TokenDto).
+     * Login público de usuario.
+     *
+     * @param dto DTO con las credenciales (username/email + password)
+     * @return {@link ResponseEntity} con un {@link TokenDto} que contiene JWT
      */
     @PostMapping("/login")
     ResponseEntity<TokenDto> login(@RequestBody @Valid LoginDto dto);
 
     /**
-     * Editar solo el username (PATCH privado).
+     * Editar solo el username de un usuario existente (privado).
+     *
+     * @param userId ID del usuario que se quiere actualizar
+     * @param partialDto DTO con el nuevo username
+     * @return {@link ResponseEntity} con el {@link UserDto} actualizado
      */
     @PatchMapping("/{userId}/username")
     ResponseEntity<UserDto> updateUsername(@PathVariable Integer userId,
                                        @RequestBody @Valid UpdateUsernameDto partialDto);
 
     /**
-     * Buscar usuario por username (público).
+     * Buscar un usuario por su username (público).
+     *
+     * @param username Nombre de usuario a buscar
+     * @return {@link ResponseEntity} con el {@link UserDto} del usuario encontrado
      */
+
     @GetMapping("/by-username/{username}")
     ResponseEntity<UserDto> getUserByUsername(@PathVariable String username);
 
     /**
      * Obtener todos los usuarios que sigue un usuario (privado).
+     *
+     * @param userId ID del usuario cuya lista de following se desea obtener
+     * @param pageable Paginación de resultados
+     * @return {@link ResponseEntity} con una página de {@link UserDto}
      */
     @GetMapping("/{userId}/following")
     ResponseEntity<Page<UserDto>> getFollowing(@PathVariable Integer userId, Pageable pageable);
 
     /**
      * Obtener todos los usuarios que siguen a un usuario (privado).
+     *
+     * @param userId ID del usuario cuyos followers se desean obtener
+     * @param pageable Paginación de resultados
+     * @return {@link ResponseEntity} con una página de {@link UserDto}
      */
     @GetMapping("/{userId}/followers")
     ResponseEntity<Page<UserDto>> getFollowers(@PathVariable Integer userId, Pageable pageable);

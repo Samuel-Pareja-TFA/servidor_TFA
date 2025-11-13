@@ -6,6 +6,19 @@ import lombok.Data;
 
 /**
  * DTO de respuesta para publicaciones.
+ *
+ * <p>Incluye información básica de la publicación y del autor para mostrar en listas y timelines.</p>
+ *
+ * <p>Campos:
+ * <ul>
+ *   <li>{@code id}: Identificador de la publicación.</li>
+ *   <li>{@code userId}: Identificador del autor.</li>
+ *   <li>{@code username}: Nombre del usuario autor.</li>
+ *   <li>{@code text}: Contenido de la publicación.</li>
+ *   <li>{@code createDate}: Fecha de creación.</li>
+ *   <li>{@code updateDate}: Fecha de última modificación.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO de publicación")

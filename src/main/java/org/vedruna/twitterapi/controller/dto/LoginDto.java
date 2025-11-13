@@ -6,7 +6,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * DTO para hacer login (público).
+ * DTO para login de usuario.
+ *
+ * <p>Se utiliza en el endpoint {@code POST /api/v1/users/login}.</p>
+ *
+ * <p>Validaciones:
+ * <ul>
+ *   <li>{@code username} obligatorio y no vacío.</li>
+ *   <li>{@code password} obligatorio, longitud entre 8 y 60 caracteres.</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO para login")

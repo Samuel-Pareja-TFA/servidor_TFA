@@ -13,10 +13,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
-
-* Controlador para seguir y dejar de seguir usuarios.
-  */
+  /**
+   * Controlador REST para gestionar las relaciones de seguimiento (follow/unfollow)
+   * entre usuarios.
+   *
+   * <p>Permite:
+   * <ul>
+   *   <li>Seguir a un usuario</li>
+   *   <li>Dejar de seguir a un usuario</li>
+   *   <li>Obtener todos los usuarios que sigue un usuario</li>
+   *   <li>Obtener todos los usuarios que siguen a un usuario</li>
+   * </ul>
+   *
+   * <p>Todos los métodos exponen {@link ResponseEntity} con código HTTP adecuado.
+   * Las excepciones como {@link UserNotFoundException} se manejan en capa de servicio
+   * y se pueden mapear a HTTP 404 mediante un {@code @ControllerAdvice}.
+   *
+   * <p>La conversión de {@link UserEntity} a {@link UserDto} se realiza internamente
+   * para no exponer información sensible como contraseñas.
+   */
   @RestController
   @RequestMapping("/users")
   @RequiredArgsConstructor
@@ -25,10 +40,13 @@ import java.util.stream.Collectors;
   private final FollowService followService;
   private final UserRepository userRepository;
 
-  /**
-
-  * Seguir a un usuario.
-    */
+    /**
+     * Seguir a un usuario.
+     *
+     * @param userId ID del usuario que desea seguir
+     * @param toFollowId ID del usuario que será seguido
+     * @return {@link ResponseEntity} con mensaje de confirmación
+     */
     @PostMapping("/{userId}/follow/{toFollowId}")
     public ResponseEntity<String> followUser(
     @PathVariable Integer userId,
@@ -38,10 +56,13 @@ import java.util.stream.Collectors;
     return ResponseEntity.ok("User " + userId + " sigue ahora a " + toFollowId);
     }
 
-  /**
-
-  * Dejar de seguir a un usuario.
-    */
+    /**
+     * Dejar de seguir a un usuario.
+     *
+     * @param userId ID del usuario que deja de seguir
+     * @param toUnfollowId ID del usuario que será dejado de seguir
+     * @return {@link ResponseEntity} con mensaje de confirmación
+     */
     @DeleteMapping("/{userId}/follow/{toUnfollowId}")
     public ResponseEntity<String> unfollowUser(
     @PathVariable Integer userId,
@@ -51,10 +72,12 @@ import java.util.stream.Collectors;
     return ResponseEntity.ok("User " + userId + " dejó de seguir a " + toUnfollowId);
     }
 
-  /**
-
-  * Obtener todos los usuarios que sigue un usuario.
-    */
+    /**
+     * Obtener todos los usuarios que sigue un usuario.
+     *
+     * @param userId ID del usuario
+     * @return {@link ResponseEntity} con lista de {@link UserDto} de los usuarios seguidos
+     */
     @GetMapping("/{userId}/following")
     public ResponseEntity<List<UserDto>> getFollowing(@PathVariable Integer userId) {
     UserEntity user = userRepository.findById(userId)
@@ -67,10 +90,12 @@ import java.util.stream.Collectors;
     return ResponseEntity.ok(dtos);
     }
 
-  /**
-
-  * Obtener todos los usuarios que siguen a un usuario.
-    */
+    /**
+     * Obtener todos los usuarios que siguen a un usuario.
+     *
+     * @param userId ID del usuario
+     * @return {@link ResponseEntity} con lista de {@link UserDto} de los followers
+     */
     @GetMapping("/{userId}/followers")
     public ResponseEntity<List<UserDto>> getFollowers(@PathVariable Integer userId) {
     UserEntity user = userRepository.findById(userId)
@@ -83,10 +108,12 @@ import java.util.stream.Collectors;
     return ResponseEntity.ok(dtos);
     }
 
-  /**
-
-  * Convierte UserEntity a UserDto.
-    */
+    /**
+     * Convierte un {@link UserEntity} a {@link UserDto}.
+     *
+     * @param user entidad de usuario
+     * @return DTO correspondiente
+     */
     private UserDto convertToDto(UserEntity user) {
     UserDto dto = new UserDto();
     dto.setUserId(user.getId());

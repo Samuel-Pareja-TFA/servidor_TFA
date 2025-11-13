@@ -5,8 +5,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * DTO para devolver información pública del usuario.
- * No incluye la contraseña.
+ * DTO para devolver información pública de un usuario.
+ *
+ * <p>No incluye la contraseña por motivos de seguridad. Proporciona información
+ * de lectura que puede ser devuelta a cualquier cliente que consuma la API.</p>
+ *
+ * <p>Campos:
+ * <ul>
+ *   <li>{@code userId}: Identificador único del usuario en la base de datos.</li>
+ *   <li>{@code username}: Nombre de usuario visible públicamente.</li>
+ *   <li>{@code email}: Correo electrónico del usuario (opcionalmente se puede ocultar).</li>
+ *   <li>{@code description}: Descripción o bio del usuario.</li>
+ *   <li>{@code createDate}: Fecha en que se creó el usuario.</li>
+ *   <li>{@code roleName}: Nombre del rol del usuario (por ejemplo, "Usuario" o "Admin").</li>
+ * </ul>
+ * </p>
  */
 @Data
 @Schema(description = "DTO público de usuario (no incluye password)")
