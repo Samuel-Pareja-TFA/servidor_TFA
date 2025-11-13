@@ -1,5 +1,6 @@
 package org.vedruna.twitterapi.persistance.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Data;

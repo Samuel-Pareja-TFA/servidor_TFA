@@ -14,6 +14,11 @@ public interface PublicationService {
     Page<PublicationEntity> getPublicationsByUser(Integer userId, Pageable pageable);
 
     /**
+     * Obtener una publicación por su id (útil para operaciones de lectura/edición).
+     */
+    PublicationEntity getPublicationById(Integer publicationId);
+
+    /**
      * Obtener las publicaciones de los usuarios que sigue el usuario userId.
      */
     Page<PublicationEntity> getPublicationsOfFollowing(Integer userId, Pageable pageable);

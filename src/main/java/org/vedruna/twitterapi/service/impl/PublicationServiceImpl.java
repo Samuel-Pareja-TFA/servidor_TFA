@@ -50,6 +50,15 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Override
     @Transactional(readOnly = true)
+    public PublicationEntity getPublicationById(Integer publicationId) {
+        log.info("Obteniendo publicación id {}", publicationId);
+        return publicationRepository.findById(publicationId)
+                .orElseThrow(() -> new PublicationNotFoundException("Publication not found with id " + publicationId));
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<PublicationEntity> getPublicationsOfFollowing(Integer userId, Pageable pageable) {
         log.info("Obteniendo publicaciones de los usuarios que sigue userId {}", userId);
 
