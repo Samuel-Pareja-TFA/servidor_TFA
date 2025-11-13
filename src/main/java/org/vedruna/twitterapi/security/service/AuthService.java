@@ -17,7 +17,19 @@ import org.vedruna.twitterapi.security.controller.dto.AuthResponseDTO;
 import lombok.AllArgsConstructor;
 
 /**
- * Servicio de autenticación: login, register y refresh token.
+ * Servicio de autenticación que gestiona:
+ * <ul>
+ *   <li>Login de usuarios mediante username y password.</li>
+ *   <li>Registro de nuevos usuarios con rol por defecto.</li>
+ *   <li>Renovación de Access Token usando Refresh Token.</li>
+ * </ul>
+ *
+ * <p>Se integra con Spring Security para autenticar usuarios y con {@link JWTServiceImpl}
+ * para generar y validar tokens JWT.</p>
+ *
+ * <p>Depende de {@link UserRepository} y {@link RoleRepository} para acceder a la base de datos,
+ * {@link PasswordEncoder} para codificar contraseñas, y {@link UserDetailsService} para cargar usuarios
+ * a partir del username.</p>
  */
 @Service
 @AllArgsConstructor
@@ -30,6 +42,21 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Autentica un usuario y genera tokens JWT.
+     *
+     * <p>El método realiza los siguientes pasos:</p>
+     * <ol>
+     *   <li>Autentica las credenciales usando {@link AuthenticationManager}.</li>
+     *   <li>Carga el usuario completo desde la base de datos.</li>
+     *   <li>Genera un access token y un refresh token usando {@link JWTServiceImpl}.</li>
+     *   <li>Devuelve un {@link AuthResponseDTO} con los tokens y el tiempo de expiración.</li>
+     * </ol>
+     *
+     * @param user usuario con username y password a autenticar
+     * @return DTO con access token, refresh token y expiración
+     * @throws NoSuchElementException si el usuario no existe en la base de datos
+     */
     public AuthResponseDTO login(UserEntity user) {
         // autenticar
         authenticationManager.authenticate(
@@ -52,6 +79,21 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * Registra un nuevo usuario en la base de datos.
+     *
+     * <p>El método realiza los siguientes pasos:</p>
+     * <ol>
+     *   <li>Obtiene el rol por defecto "Usuario" desde {@link RoleRepository}.</li>
+     *   <li>Codifica la contraseña usando {@link PasswordEncoder}.</li>
+     *   <li>Asigna la fecha de creación actual y el rol al usuario.</li>
+     *   <li>Guarda el usuario en la base de datos usando {@link UserRepository}.</li>
+     * </ol>
+     *
+     * @param user entidad de usuario a registrar
+     * @return usuario registrado con ID y rol asignado
+     * @throws NoSuchElementException si no se encuentra el rol por defecto
+     */
     public UserEntity register(UserEntity user) {
         RoleEntity rol = roleRepo.findByName("Usuario")
                 .orElseThrow(() -> new NoSuchElementException("Role not found"));
@@ -62,6 +104,22 @@ public class AuthService {
         return userRepo.save(user);
     }
 
+    /**
+     * Renueva el access token a partir de un refresh token válido.
+     *
+     * <p>El método realiza los siguientes pasos:</p>
+     * <ol>
+     *   <li>Obtiene el username contenido en el refresh token.</li>
+     *   <li>Carga los detalles del usuario desde {@link UserDetailsService}.</li>
+     *   <li>Valida que el refresh token sea válido y no esté expirado.</li>
+     *   <li>Genera un nuevo access token.</li>
+     *   <li>Devuelve un {@link AuthResponseDTO} con el nuevo access token y el refresh token original.</li>
+     * </ol>
+     *
+     * @param refreshToken token de refresco recibido
+     * @return DTO con nuevo access token, refresh token y expiración
+     * @throws IllegalArgumentException si el refresh token no es válido o ha expirado
+     */
     public AuthResponseDTO refreshToken(String refreshToken) {
         final String username = jwtService.getUsernameFromRefreshToken(refreshToken);
         var userDetails = userDetailsService.loadUserByUsername(username);

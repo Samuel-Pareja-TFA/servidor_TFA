@@ -14,8 +14,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.vedruna.twitterapi.security.filter.JwtAuthenticationFilter;
 
 /**
- * SecurityConfig consolidado: permite explícitamente los endpoints públicos que
- * indicaste y protege el resto.
+ * Configuración central de seguridad de Spring Security.
+ *
+ * <p>Proporciona:</p>
+ * <ul>
+ *   <li>Permisos explícitos para endpoints públicos (register, login, búsqueda de usuario, publicaciones públicas, Swagger/OpenAPI).</li>
+ *   <li>Protección de endpoints privados mediante autenticación JWT.</li>
+ *   <li>Configuración stateless de la sesión (sin cookies, solo JWT).</li>
+ *   <li>Integración del filtro {@link JwtAuthenticationFilter} antes de
+ *       {@link UsernamePasswordAuthenticationFilter} para validar tokens.</li>
+ * </ul>
+ *
+ * <p>Se habilita:</p>
+ * <ul>
+ *   <li>{@link EnableWebSecurity} para seguridad web básica</li>
+ *   <li>{@link EnableMethodSecurity} para anotaciones de seguridad a nivel de métodos</li>
+ * </ul>
+ *
+ * <p>El bean {@link SecurityFilterChain} define la política de autorización, los endpoints permitidos y
+ * la gestión de sesiones.</p>
  */
 @Configuration
 @EnableWebSecurity
@@ -26,6 +43,23 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authProvider;
 
+    /**
+     * Define la cadena de filtros de seguridad de Spring Security.
+     *
+     * <p>Configura:</p>
+     * <ul>
+     *   <li>Deshabilita CSRF (aplicable en APIs REST con JWT)</li>
+     *   <li>Permite preflight OPTIONS para CORS</li>
+     *   <li>Autoriza explícitamente ciertos endpoints públicos</li>
+     *   <li>Requiere autenticación para cualquier otro endpoint</li>
+     *   <li>Define sesión stateless para usar solo JWT</li>
+     *   <li>Registra el {@link AuthenticationProvider} y el filtro {@link JwtAuthenticationFilter}</li>
+     * </ul>
+     *
+     * @param http objeto HttpSecurity para configurar la seguridad HTTP
+     * @return {@link SecurityFilterChain} configurado
+     * @throws Exception si ocurre un error al construir la cadena de seguridad
+     */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
