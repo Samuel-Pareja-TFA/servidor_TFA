@@ -100,3 +100,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iL
 # 12) Borrar publicación (PRIVADO)
 DELETE http://localhost:8080/api/v1/publications/23
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDQwMDAxLCJleHAiOjE3NjMwNDAxODF9.18qvCwQeJUElXvSUgGgkOkZ8CgFqjnh9Xa9_cLTMwBE
+
+
+#################################################################
+# 13) Seguir a un usuario (PRIVADO)
+POST http://localhost:8080/api/v1/follows/8/follow/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjg4NDA0LCJleHAiOjE3NjMyODg1ODR9.K4QlzxWJ_248frsjGiPoxLSV1cKQ6iFKGL3gOsDIA3E
+
+#################################################################
+# 14) Dejar de seguir a un usuario (PRIVADO)
+DELETE http://localhost:8080/api/v1/follows/8/follow/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjg4NDA0LCJleHAiOjE3NjMyODg1ODR9.K4QlzxWJ_248frsjGiPoxLSV1cKQ6iFKGL3gOsDIA3E

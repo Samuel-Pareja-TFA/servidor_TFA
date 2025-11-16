@@ -150,7 +150,6 @@ JWTServiceImpl	Generación y validación de JWT (Access + Refresh), obtención d
 FollowService	Gestión de relaciones follow/unfollow, obtención de followers/following
 Persistence
 
-
 Entities:
 
 Entity	Descripción
@@ -276,7 +275,6 @@ mvn spring-boot:run
 Probar endpoints con Postman o Swagger UI.
 
 ✅ Notas de Buenas Prácticas
-
 
 Separación clara de capas: Controller → Service → Repository → Entity
 
