@@ -126,3 +126,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iL
 # 16) Obtener comentarios de una publicación (PÚBLICO)  
 GET http://localhost:8080/api/v1/comments/22
 Accept: application/json
+
+#################################################################
+# 17) Dar like a una publicación (PRIVADO)
+POST http://localhost:8080/api/v1/likes/22/user/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMzI4MTc3LCJleHAiOjE3NjMzMjgzNTd9.EShrn-e9GD4sCeNx0LP7brC8WLDCP8tGtp2bLLh6unM
+
+#################################################################
+# 18) Quitar like a una publicación (PRIVADO)
+DELETE http://localhost:8080/api/v1/likes/22/user/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMzI4MTc3LCJleHAiOjE3NjMzMjgzNTd9.EShrn-e9GD4sCeNx0LP7brC8WLDCP8tGtp2bLLh6unM
+
+#################################################################
+# 19) Obtener número de likes de una publicación (PÚBLICO)
+GET http://localhost:8080/api/v1/likes/22/count
+Accept: application/json
