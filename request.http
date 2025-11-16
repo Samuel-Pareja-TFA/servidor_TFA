@@ -111,3 +111,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iL
 # 14) Dejar de seguir a un usuario (PRIVADO)
 DELETE http://localhost:8080/api/v1/follows/8/follow/3
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjg4NDA0LCJleHAiOjE3NjMyODg1ODR9.K4QlzxWJ_248frsjGiPoxLSV1cKQ6iFKGL3gOsDIA3E
+
+#################################################################
+# 15) Añadir comentario a una publicación (PRIVADO)
+POST http://localhost:8080/api/v1/comments/22/user/8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjkyNTQ5LCJleHAiOjE3NjMyOTI3Mjl9.DLVtoA0EjLD2t9IEg3O94uzsUX-Fj3exSViNYuuGnWU
+
+{
+  "text": "Este es un comentario de prueba"
+}
+
+#################################################################
+# 16) Obtener comentarios de una publicación (PÚBLICO)  
+GET http://localhost:8080/api/v1/comments/22
+Accept: application/json

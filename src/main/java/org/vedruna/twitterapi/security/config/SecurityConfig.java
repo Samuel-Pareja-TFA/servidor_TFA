@@ -79,6 +79,9 @@ public class SecurityConfig {
 
                 // Publicaciones de un usuario (GET) -> público según tus indicaciones
                 .requestMatchers(HttpMethod.GET, "/api/v1/publications/user/**").permitAll()
+                
+                // Comentarios de una publicación (GET) -> público según tus indicaciones
+                .requestMatchers(HttpMethod.GET, "/api/v1/comments/**").permitAll()
 
                 // Swagger / OpenAPI docs (si los usas)
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
