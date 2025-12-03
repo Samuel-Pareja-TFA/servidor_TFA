@@ -1,0 +1,143 @@
+### BASE: http://localhost:8080/api/v1
+
+#################################################################
+# 1) Registro de usuario (público) -> /auth/register
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "samuel",
+  "password": "MiPass123!",
+  "email": "samu@example.com",
+  "description": "Un usuario nuevo para samu"
+}
+
+#################################################################
+# 2) Login de usuario (público) -> /auth/login
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "Marina2",
+  "password": "MiPass123!"
+}
+
+#################################################################
+# 2b) Refresh token (opcional)
+POST http://localhost:8080/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYW11ZWwiLCJpYXQiOjE3NjMwMzk2NDksImV4cCI6MTc2MzY0NDQ0OX0.XNQJLQn96qCklAZ-bztRMaf9-UKGbvaAE9FGiFitJ0k"
+}
+
+#################################################################
+# 3) Editar sólo el nombre de usuario (PATCH) (PRIVADO -> requiere Authorization)
+#    Sustituye {{ACCESS_TOKEN}} por el access_token devuelto en el login.
+PATCH http://localhost:8080/api/v1/users/8/username
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTYW11ZWwiLCJpYXQiOjE3NjMwMzk2OTgsImV4cCI6MTc2MzAzOTg3OH0._1CBUI8GEs_LgkdjUtEhbUWkRZY59a15poGgKgXtfBQ
+
+{
+  "username": "SAMUELILLO"
+}
+
+#################################################################
+# 4) Buscar usuario por username (público)
+GET http://localhost:8080/api/v1/users/by-username/SAMUELILLO
+Accept: application/json
+
+#################################################################
+# 5) Obtener todos los usuarios que sigue un usuario (PRIVADO)
+GET http://localhost:8080/api/v1/users/8/following
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+
+#################################################################
+# 6) Obtener todos los usuarios que siguen a un usuario (PRIVADO)
+GET http://localhost:8080/api/v1/users/8/followers
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+
+#################################################################
+# 7) Obtener todas las publicaciones (PRIVADO)
+GET http://localhost:8080/api/v1/publications/
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzNTcxMDUxLCJleHAiOjE3NjM1NzEyMzF9.5c8xsyNZmNgTAT7071A5f3v_LRDmjzQStmPrQeqEqhE
+
+#################################################################
+# 8) Obtener todas las publicaciones de un usuario (PÚBLICO)
+GET http://localhost:8080/api/v1/publications/user/8
+Accept: application/json
+
+#################################################################
+# 9) Obtener publicaciones de los usuarios que sigues (timeline) (PRIVADO)
+GET http://localhost:8080/api/v1/publications/timeline/8
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+
+#################################################################
+# 10) Insertar publicación (PRIVADO)
+POST http://localhost:8080/api/v1/publications/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+
+{
+  "text": "Publicacion de arreglo de endpoints con security"
+}
+
+#################################################################
+# 11) Editar publicación (PRIVADO)
+PUT http://localhost:8080/api/v1/publications/23
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+
+{
+  "text": "Publicación de Spring Security actualizada"
+}
+
+#################################################################
+# 12) Borrar publicación (PRIVADO)
+DELETE http://localhost:8080/api/v1/publications/23
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDQwMDAxLCJleHAiOjE3NjMwNDAxODF9.18qvCwQeJUElXvSUgGgkOkZ8CgFqjnh9Xa9_cLTMwBE
+
+
+#################################################################
+# 13) Seguir a un usuario (PRIVADO)
+POST http://localhost:8080/api/v1/follows/7/follow/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im1hcmluYTJAZXhhbXBsZS5jb20iLCJzdWIiOiJNYXJpbmEyIiwiaWF0IjoxNzYzNjcxNjEzLCJleHAiOjE3NjM2NzE3OTN9.Nq-5rHxvzwF3IA4rJkGYJkJn5VnIYwhEN-kN7iycQ1A
+
+#################################################################
+# 14) Dejar de seguir a un usuario (PRIVADO)
+DELETE http://localhost:8080/api/v1/follows/8/follow/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjg4NDA0LCJleHAiOjE3NjMyODg1ODR9.K4QlzxWJ_248frsjGiPoxLSV1cKQ6iFKGL3gOsDIA3E
+
+#################################################################
+# 15) Añadir comentario a una publicación (PRIVADO)
+POST http://localhost:8080/api/v1/comments/22/user/8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjkyNTQ5LCJleHAiOjE3NjMyOTI3Mjl9.DLVtoA0EjLD2t9IEg3O94uzsUX-Fj3exSViNYuuGnWU
+
+{
+  "text": "Este es un comentario de prueba"
+}
+
+#################################################################
+# 16) Obtener comentarios de una publicación (PÚBLICO)  
+GET http://localhost:8080/api/v1/comments/22
+Accept: application/json
+
+#################################################################
+# 17) Dar like a una publicación (PRIVADO)
+POST http://localhost:8080/api/v1/likes/22/user/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMzI4MTc3LCJleHAiOjE3NjMzMjgzNTd9.EShrn-e9GD4sCeNx0LP7brC8WLDCP8tGtp2bLLh6unM
+
+#################################################################
+# 18) Quitar like a una publicación (PRIVADO)
+DELETE http://localhost:8080/api/v1/likes/22/user/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMzI4MTc3LCJleHAiOjE3NjMzMjgzNTd9.EShrn-e9GD4sCeNx0LP7brC8WLDCP8tGtp2bLLh6unM
+
+#################################################################
+# 19) Obtener número de likes de una publicación (PÚBLICO)
+GET http://localhost:8080/api/v1/likes/22/count
+Accept: application/json
