@@ -48,7 +48,7 @@ public interface PublicationController {
      */
     @Operation(summary = "Obtener todas las publicaciones (privado)")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Lista de publicaciones obtenida correctamente")
+    @ApiResponse(responseCode = "200", description = "Lista de publicaciones obtenida correctamente")
     })
     @GetMapping("/")
     ResponseEntity<Page<PublicationDto>> getAllPublications(Pageable pageable);
@@ -91,7 +91,7 @@ public interface PublicationController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Publicación creada correctamente")
     })
-    @PostMapping("/")
+    @PostMapping({"", "/"})
     ResponseEntity<PublicationDto> createPublication(@RequestBody @Valid CreatePublicationDto dto);
 
     /**

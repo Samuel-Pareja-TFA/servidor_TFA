@@ -18,7 +18,7 @@ POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "username": "SAMUELILLO",
+  "username": "Marina2",
   "password": "MiPass123!"
 }
 
@@ -63,7 +63,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iL
 # 7) Obtener todas las publicaciones (PRIVADO)
 GET http://localhost:8080/api/v1/publications/
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMDM5Nzk0LCJleHAiOjE3NjMwMzk5NzR9.LrLzO8lrFolQF56LOOEe3RJmVzexNXFVgLCRU5e_bjw
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzNTcxMDUxLCJleHAiOjE3NjM1NzEyMzF9.5c8xsyNZmNgTAT7071A5f3v_LRDmjzQStmPrQeqEqhE
 
 #################################################################
 # 8) Obtener todas las publicaciones de un usuario (PÚBLICO)
@@ -104,8 +104,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iL
 
 #################################################################
 # 13) Seguir a un usuario (PRIVADO)
-POST http://localhost:8080/api/v1/follows/8/follow/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InNhbXVAZXhhbXBsZS5jb20iLCJzdWIiOiJTQU1VRUxJTExPIiwiaWF0IjoxNzYzMjg4NDA0LCJleHAiOjE3NjMyODg1ODR9.K4QlzxWJ_248frsjGiPoxLSV1cKQ6iFKGL3gOsDIA3E
+POST http://localhost:8080/api/v1/follows/7/follow/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im1hcmluYTJAZXhhbXBsZS5jb20iLCJzdWIiOiJNYXJpbmEyIiwiaWF0IjoxNzYzNjcxNjEzLCJleHAiOjE3NjM2NzE3OTN9.Nq-5rHxvzwF3IA4rJkGYJkJn5VnIYwhEN-kN7iycQ1A
 
 #################################################################
 # 14) Dejar de seguir a un usuario (PRIVADO)
