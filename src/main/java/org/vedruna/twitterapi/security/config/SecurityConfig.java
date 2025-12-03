@@ -13,6 +13,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.vedruna.twitterapi.security.filter.JwtAuthenticationFilter;
 
+/* IMPORTS AÑADIDOS PARA CORS */
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 /**
  * Configuración central de seguridad de Spring Security.
  *
@@ -63,6 +70,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> {})
             .csrf(csrf -> csrf.disable())
             // Autorizar rutas
             .authorizeHttpRequests(auth -> auth
@@ -104,4 +112,33 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    /**
+     * Configuración global de CORS para toda la API.
+     *
+     * <p>Permite que el frontend en http://localhost:5173
+     * pueda acceder a los endpoints de este backend con los métodos y cabeceras indicados.</p>
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // Origen del front
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        // Métodos permitidos
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Cabeceras permitidas
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        // Si en algún momento usas cookies/sesiones, esto ayuda.
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplica esta configuración CORS a todos los endpoints
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
 }

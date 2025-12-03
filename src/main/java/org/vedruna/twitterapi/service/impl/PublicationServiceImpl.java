@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vedruna.twitterapi.persistance.entity.PublicationEntity;
@@ -52,6 +53,7 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public Page<PublicationEntity> getAllPublications(Pageable pageable) {
         log.info("Obteniendo todas las publicaciones (paged)");
         return publicationRepository.findAll(pageable);
